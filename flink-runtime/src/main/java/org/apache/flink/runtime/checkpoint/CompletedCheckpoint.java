@@ -311,7 +311,7 @@ public class CompletedCheckpoint implements Serializable {
 
 	/**
 	 * Sets the callback for tracking when this checkpoint is discarded.
-	 *
+	 *设置回调以跟踪何时丢弃此检查点。
 	 * @param discardCallback Callback to call when the checkpoint is discarded.
 	 */
 	void setDiscardCallback(@Nullable CompletedCheckpointStats.DiscardCallback discardCallback) {

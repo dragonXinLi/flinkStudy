@@ -287,7 +287,7 @@ public abstract class StreamTask<OUT, OP extends StreamOperator<OUT>>
 				// both the following operations are protected by the lock
 				// so that we avoid race conditions in the case that initializeState()
 				// registers a timer, that fires before the open() is called.
-
+				//先初始化state,再调用operates的open方法
 				initializeState();
 				openAllOperators();
 			}
@@ -416,7 +416,12 @@ public abstract class StreamTask<OUT, OP extends StreamOperator<OUT>>
 
 	/**
 	 * Execute {@link StreamOperator#open()} of each operator in the chain of this
-	 * {@link StreamTask}. Opening happens from <b>tail to head</b> operator in the chain, contrary
+	 * {@link StreamTask}.
+	 * 执行此sourceStreamTask任务的chain链中每个运算符的{@link StreamOperator＃open（）}
+	 *
+	 * Source: Custom Source -> Timestamps/Watermarks -> Map -> Process (1/2)为一个task任务
+	 *
+	 * Opening happens from <b>tail to head</b> operator in the chain, contrary
 	 * to {@link StreamOperator#close()} which happens <b>head to tail</b>
 	 * (see {@link #closeAllOperators()}.
 	 */
@@ -558,7 +563,8 @@ public abstract class StreamTask<OUT, OP extends StreamOperator<OUT>>
 	@Override
 	public boolean triggerCheckpoint(CheckpointMetaData checkpointMetaData, CheckpointOptions checkpointOptions) throws Exception {
 		try {
-			// No alignment if we inject a checkpoint
+			// No alignment if we inject a checkpoint,如果我们注入检查点，则无法对齐
+			////设置barrier对齐的一些参数
 			CheckpointMetrics checkpointMetrics = new CheckpointMetrics()
 					.setBytesBufferedInAlignment(0L)
 					.setAlignmentDurationNanos(0L);
@@ -578,6 +584,16 @@ public abstract class StreamTask<OUT, OP extends StreamOperator<OUT>>
 		}
 	}
 
+	/**
+	 * 可以看到与3.1步骤的区别在于触发的方法是triggerCheckpointOnBarrier，后续的步骤是一致的。
+	 * 一旦barrier对齐处理完毕，打完算子状态，该Task也会向JobManager发送ACK消息。
+	 * 当barrier发射到sink端，sink端处理完，所有sink端的算子状态的ACK消息也被确认才会调用4.1步骤对PendingCheckpoint的最终转化，并真正完成一次Checkpoint的过程
+	 * @param checkpointMetaData Meta data for about this checkpoint
+	 * @param checkpointOptions Options for performing this checkpoint
+	 * @param checkpointMetrics Metrics about this checkpoint
+	 *
+	 * @throws Exception
+	 */
 	@Override
 	public void triggerCheckpointOnBarrier(
 			CheckpointMetaData checkpointMetaData,
@@ -611,6 +627,14 @@ public abstract class StreamTask<OUT, OP extends StreamOperator<OUT>>
 		}
 	}
 
+	/**
+	 * 实际做checkpoint工作
+	 * @param checkpointMetaData
+	 * @param checkpointOptions
+	 * @param checkpointMetrics
+	 * @return
+	 * @throws Exception
+	 */
 	private boolean performCheckpoint(
 			CheckpointMetaData checkpointMetaData,
 			CheckpointOptions checkpointOptions,
@@ -626,13 +650,16 @@ public abstract class StreamTask<OUT, OP extends StreamOperator<OUT>>
 				// All of the following steps happen as an atomic step from the perspective of barriers and
 				// records/watermarks/timers/callbacks.
 				// We generally try to emit the checkpoint barrier as soon as possible to not affect downstream
+				//我们通常尝试尽快发出检查点障碍，以不影响下游检查点对齐
 				// checkpoint alignments
 
 				// Step (1): Prepare the checkpoint, allow operators to do some pre-barrier work.
 				//           The pre-barrier work should be nothing or minimal in the common case.
+				//在通常情况下，预屏障工作应该为零或最少
 				operatorChain.prepareSnapshotPreBarrier(checkpointMetaData.getCheckpointId());
 
 				// Step (2): Send the checkpoint barrier downstream
+				//将检查点屏障发送到下游
 				operatorChain.broadcastCheckpointBarrier(
 						checkpointMetaData.getCheckpointId(),
 						checkpointMetaData.getTimestamp(),
@@ -640,6 +667,7 @@ public abstract class StreamTask<OUT, OP extends StreamOperator<OUT>>
 
 				// Step (3): Take the state snapshot. This should be largely asynchronous, to not
 				//           impact progress of the streaming topology
+				//拍摄状态快照.这在很大程度上应该是异步的，以免影响流式拓扑的进度
 				checkpointState(checkpointMetaData, checkpointOptions, checkpointMetrics);
 				return true;
 			}
@@ -805,6 +833,7 @@ public abstract class StreamTask<OUT, OP extends StreamOperator<OUT>>
 
 	/**
 	 * This runnable executes the asynchronous parts of all involved backend snapshots for the subtask.
+	 * 此可运行程序为子任务执行所有涉及的后端快照的异步部分。
 	 */
 	@VisibleForTesting
 	protected static final class AsyncCheckpointRunnable implements Runnable, Closeable {
@@ -858,7 +887,7 @@ public abstract class StreamTask<OUT, OP extends StreamOperator<OUT>>
 					jobManagerTaskOperatorSubtaskStates.putSubtaskStateByOperatorID(
 						operatorID,
 						finalizedSnapshots.getJobManagerOwnedState());
-
+					//执行所有的state固化文件操作
 					localTaskOperatorSubtaskStates.putSubtaskStateByOperatorID(
 						operatorID,
 						finalizedSnapshots.getTaskLocalState());
@@ -872,6 +901,7 @@ public abstract class StreamTask<OUT, OP extends StreamOperator<OUT>>
 				if (asyncCheckpointState.compareAndSet(CheckpointingOperation.AsyncCheckpointState.RUNNING,
 					CheckpointingOperation.AsyncCheckpointState.COMPLETED)) {
 
+					//返回acknowledgeCheckpoint给JobManager
 					reportCompletedSnapshotStates(
 						jobManagerTaskOperatorSubtaskStates,
 						localTaskOperatorSubtaskStates,
@@ -1053,7 +1083,11 @@ public abstract class StreamTask<OUT, OP extends StreamOperator<OUT>>
 			startSyncPartNano = System.nanoTime();
 
 			try {
+				/**
+				 * chainOperate链，这里allOperateors存储的是拆分后的Operate
+				 */
 				for (StreamOperator<?> op : allOperators) {
+					//最终会执行到调用算子的snapshotState方法
 					checkpointStreamOperator(op);
 				}
 
@@ -1075,6 +1109,7 @@ public abstract class StreamTask<OUT, OP extends StreamOperator<OUT>>
 					startAsyncPartNano);
 
 				owner.cancelables.registerCloseable(asyncCheckpointRunnable);
+				//所有快照子线程异步存储
 				owner.asyncOperationsThreadPool.execute(asyncCheckpointRunnable);
 
 				if (LOG.isDebugEnabled()) {
@@ -1111,7 +1146,7 @@ public abstract class StreamTask<OUT, OP extends StreamOperator<OUT>>
 		@SuppressWarnings("deprecation")
 		private void checkpointStreamOperator(StreamOperator<?> op) throws Exception {
 			if (null != op) {
-
+				//最终会执行到调用算子的snapshotState方法
 				OperatorSnapshotFutures snapshotInProgress = op.snapshotState(
 						checkpointMetaData.getCheckpointId(),
 						checkpointMetaData.getTimestamp(),

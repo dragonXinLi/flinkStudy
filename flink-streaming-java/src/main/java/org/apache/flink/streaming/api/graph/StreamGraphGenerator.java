@@ -621,7 +621,7 @@ public class StreamGraphGenerator {
 	/**
 	 * Determines the slot sharing group for an operation based on the slot sharing group set by
 	 * the user and the slot sharing groups of the inputs.
-	 *
+	 * 根据用户设置的插槽共享组和输入的插槽共享组，确定操作的插槽共享组。
 	 * <p>If the user specifies a group name, this is taken as is. If nothing is specified and
 	 * the input operations all have the same group name then this name is taken. Otherwise the
 	 * default group is chosen.
@@ -642,7 +642,7 @@ public class StreamGraphGenerator {
 					return "default";
 				}
 			}
-			return inputGroup == null ? "default" : inputGroup;
+			return inputGroup == null ? "default" : inputGroup; //slot sharing group 默认为default
 		}
 	}
 

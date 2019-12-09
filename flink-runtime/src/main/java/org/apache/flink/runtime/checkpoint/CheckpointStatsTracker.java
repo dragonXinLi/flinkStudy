@@ -240,7 +240,7 @@ public class CheckpointStatsTracker {
 
 	/**
 	 * Callback when a checkpoint completes.
-	 *
+	 *检查点完成时回调。
 	 * @param completed The completed checkpoint stats.
 	 */
 	private void reportCompletedCheckpoint(CompletedCheckpointStats completed) {
@@ -298,7 +298,7 @@ public class CheckpointStatsTracker {
 
 		/**
 		 * Report a completed checkpoint.
-		 *
+		 *报告完成的检查点,然后Flink UI界面上的chk 圈圈会变成钩钩
 		 * @param completed The completed checkpoint.
 		 */
 		void reportCompletedCheckpoint(CompletedCheckpointStats completed) {

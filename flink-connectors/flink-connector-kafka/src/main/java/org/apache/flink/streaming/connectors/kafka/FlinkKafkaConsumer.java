@@ -120,6 +120,7 @@ public class FlinkKafkaConsumer<T> extends FlinkKafkaConsumerBase<T> {
 	 * Creates a new Kafka streaming source consumer.
 	 *
 	 * <p>This constructor allows passing multiple topics to the consumer.
+	 * 此构造函数允许将多个主题传递给使用者
 	 *
 	 * @param topics       The Kafka topics to read from.
 	 * @param deserializer The de-/serializer used to convert between Kafka's byte messages and Flink's objects.
@@ -219,8 +220,8 @@ public class FlinkKafkaConsumer<T> extends FlinkKafkaConsumerBase<T> {
 		MetricGroup consumerMetricGroup,
 		boolean useMetrics) throws Exception {
 
-		// make sure that auto commit is disabled when our offset commit mode is ON_CHECKPOINTS;
-		// this overwrites whatever setting the user configured in the properties
+		// make sure that auto commit is disabled when our offset commit mode is ON_CHECKPOINTS;当偏移量提交模式是ON_CHECKPOINTS时，请确保禁用自动提交
+		// this overwrites whatever setting the user configured in the properties  这将覆盖用户在属性中配置的任何设置
 		if (offsetCommitMode == OffsetCommitMode.ON_CHECKPOINTS || offsetCommitMode == OffsetCommitMode.DISABLED) {
 			properties.setProperty(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, "false");
 		}

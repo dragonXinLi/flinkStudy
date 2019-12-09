@@ -26,6 +26,7 @@ import org.apache.flink.api.java.utils.ParameterTool;
 import org.apache.flink.examples.java.wordcount.util.WordCountData;
 import org.apache.flink.util.Collector;
 
+
 /**
  * Implements the "WordCount" program that computes a simple word occurrence histogram
  * over text files.

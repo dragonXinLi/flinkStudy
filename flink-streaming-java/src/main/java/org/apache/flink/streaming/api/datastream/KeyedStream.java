@@ -601,6 +601,8 @@ public class KeyedStream<T, KEY> extends DataStream<T> {
 	/**
 	 * Windows this {@code KeyedStream} into tumbling time windows.
 	 *
+	 * TimeWindows的滚动时间窗口
+	 *
 	 * <p>This is a shortcut for either {@code .window(TumblingEventTimeWindows.of(size))} or
 	 * {@code .window(TumblingProcessingTimeWindows.of(size))} depending on the time characteristic
 	 * set using
@@ -610,14 +612,18 @@ public class KeyedStream<T, KEY> extends DataStream<T> {
 	 */
 	public WindowedStream<T, KEY, TimeWindow> timeWindow(Time size) {
 		if (environment.getStreamTimeCharacteristic() == TimeCharacteristic.ProcessingTime) {
+			//按机器处理时间来分配的滚动时间窗口
 			return window(TumblingProcessingTimeWindows.of(size));
 		} else {
+			//按事件时间来分配的滚动时间窗口
 			return window(TumblingEventTimeWindows.of(size));
 		}
 	}
 
 	/**
 	 * Windows this {@code KeyedStream} into sliding time windows.
+	 *
+	 * TimeWindows的滑动时间窗口
 	 *
 	 * <p>This is a shortcut for either {@code .window(SlidingEventTimeWindows.of(size, slide))} or
 	 * {@code .window(SlidingProcessingTimeWindows.of(size, slide))} depending on the time
@@ -628,14 +634,18 @@ public class KeyedStream<T, KEY> extends DataStream<T> {
 	 */
 	public WindowedStream<T, KEY, TimeWindow> timeWindow(Time size, Time slide) {
 		if (environment.getStreamTimeCharacteristic() == TimeCharacteristic.ProcessingTime) {
+			//按机器处理时间来分配的滑动时间窗口
 			return window(SlidingProcessingTimeWindows.of(size, slide));
 		} else {
+			//按事件时间来分配的滑动时间窗口
 			return window(SlidingEventTimeWindows.of(size, slide));
 		}
 	}
 
 	/**
 	 * Windows this {@code KeyedStream} into tumbling count windows.
+	 *
+	 * 滚动的计数窗口
 	 *
 	 * @param size The size of the windows in number of elements.
 	 */
@@ -645,6 +655,8 @@ public class KeyedStream<T, KEY> extends DataStream<T> {
 
 	/**
 	 * Windows this {@code KeyedStream} into sliding count windows.
+	 *
+	 * 滑动的计数窗口
 	 *
 	 * @param size The size of the windows in number of elements.
 	 * @param slide The slide interval in number of elements.
@@ -660,11 +672,13 @@ public class KeyedStream<T, KEY> extends DataStream<T> {
 	 * over a key grouped stream. Elements are put into windows by a {@link WindowAssigner}. The
 	 * grouping of elements is done both by key and by window.
 	 *
+	 * 提供自定义 Window
+	 *
 	 * <p>A {@link org.apache.flink.streaming.api.windowing.triggers.Trigger} can be defined to
 	 * specify when windows are evaluated. However, {@code WindowAssigners} have a default
 	 * {@code Trigger} that is used if a {@code Trigger} is not specified.
 	 *
-	 * @param assigner The {@code WindowAssigner} that assigns elements to windows.
+	 * @param assigner The {@code WindowAssigner} that assigns elements to windows. 自定义window所需要传入的assinger类
 	 * @return The trigger windows data stream.
 	 */
 	@PublicEvolving

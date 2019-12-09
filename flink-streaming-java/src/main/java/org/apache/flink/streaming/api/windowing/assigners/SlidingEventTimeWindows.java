@@ -71,6 +71,7 @@ public class SlidingEventTimeWindows extends WindowAssigner<Object, TimeWindow> 
 			for (long start = lastStart;
 				start > timestamp - size;
 				start -= slide) {
+				//创建Window窗口。注意区分window窗口和windowStream流
 				windows.add(new TimeWindow(start, start + size));
 			}
 			return windows;

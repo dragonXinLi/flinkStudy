@@ -24,6 +24,9 @@ import org.apache.flink.streaming.api.windowing.windows.TimeWindow;
 /**
  * A {@link Trigger} that fires once the current system time passes the end of the window
  * to which a pane belongs.
+ *
+ * {@link触发}在当前系统时间超过窗口结束时触发窗口所属
+ *
  */
 @PublicEvolving
 public class ProcessingTimeTrigger extends Trigger<Object, TimeWindow> {
@@ -42,6 +45,13 @@ public class ProcessingTimeTrigger extends Trigger<Object, TimeWindow> {
 		return TriggerResult.CONTINUE;
 	}
 
+	/**
+	 * 执行该方法的条件是已经注册了ProcessingTimeTimer定时器，定时器时间到了就会回调该方法
+	 * @param time The timestamp at which the timer fired.
+	 * @param window The window for which the timer fired.
+	 * @param ctx A context object that can be used to register timer callbacks.
+	 * @return
+	 */
 	@Override
 	public TriggerResult onProcessingTime(long time, TimeWindow window, TriggerContext ctx) {
 		return TriggerResult.FIRE;

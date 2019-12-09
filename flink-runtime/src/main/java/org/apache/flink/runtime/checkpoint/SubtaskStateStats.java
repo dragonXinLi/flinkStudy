@@ -62,14 +62,14 @@ public class SubtaskStateStats implements Serializable {
 
 	/**
 	 * Creates the stats for a single subtask.
-	 *
-	 * @param subtaskIndex Index of the subtask.
-	 * @param ackTimestamp Timestamp when the acknowledgement of this subtask was received at the coordinator.
-	 * @param stateSize Size of the checkpointed state at this subtask.
-	 * @param syncCheckpointDuration Checkpoint duration at the task (synchronous part)
-	 * @param asyncCheckpointDuration  Checkpoint duration at the task (asynchronous part)
-	 * @param alignmentBuffered Bytes buffered during stream alignment (for exactly-once only).
-	 * @param alignmentDuration Duration of the stream alignment (for exactly-once only).
+	 * 为单个子任务创建统计信息。
+	 * @param subtaskIndex Index of the subtask.子任务的索引
+	 * @param ackTimestamp Timestamp when the acknowledgement of this subtask was received at the coordinator.在协调器上收到此子任务的确认的时间戳。
+	 * @param stateSize Size of the checkpointed state at this subtask.此子任务上检查点状态的大小。
+	 * @param syncCheckpointDuration Checkpoint duration at the task (synchronous part)任务的检查点持续时间（同步部分）
+	 * @param asyncCheckpointDuration  Checkpoint duration at the task (asynchronous part)任务的检查点持续时间（异步部分）
+	 * @param alignmentBuffered Bytes buffered during stream alignment (for exactly-once only).流对齐期间缓冲的字节（仅一次）。
+	 * @param alignmentDuration Duration of the stream alignment (for exactly-once only).流对齐的持续时间（仅一次）。
 	 */
 	SubtaskStateStats(
 			int subtaskIndex,

@@ -42,7 +42,9 @@ import java.util.Set;
 @PublicEvolving
 public class TimeWindow extends Window {
 
+	//window窗口的开始时间
 	private final long start;
+	//window窗口的结束时间
 	private final long end;
 
 	public TimeWindow(long start, long end) {
@@ -76,6 +78,8 @@ public class TimeWindow extends Window {
 	 * <p>This timestamp is identical to {@code getEnd() - 1}.
 	 *
 	 * @return The largest timestamp that still belongs to this window.
+	 *
+	 * 返回属于此窗口的最大时间戳。
 	 *
 	 * @see #getEnd()
 	 */
@@ -245,6 +249,8 @@ public class TimeWindow extends Window {
 
 	/**
 	 * Method to get the window start for a timestamp.
+	 *
+	 * 计算窗口的开始时间
 	 *
 	 * @param timestamp epoch millisecond to get the window start.
 	 * @param offset The offset which window start would be shifted by.

@@ -392,6 +392,7 @@ public abstract class AbstractStreamOperator<OUT>
 				keyGroupRange,
 				getContainingTask().getCancelables())) {
 
+			//最终会执行到调用算子的snapshotState方法
 			snapshotState(snapshotContext);
 
 			snapshotInProgress.setKeyedStateRawFuture(snapshotContext.getKeyedStateStreamFuture());

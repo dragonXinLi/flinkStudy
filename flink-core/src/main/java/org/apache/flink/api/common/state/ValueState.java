@@ -26,6 +26,8 @@ import java.io.IOException;
  * {@link State} interface for partitioned single-value state. The value can be retrieved or
  * updated.
  *
+ * 分区单值状态的接口。 可以检索或更新该值。
+ *
  * <p>The state is accessed and modified by user functions, and checkpointed consistently
  * by the system as part of the distributed snapshots.
  *
@@ -34,6 +36,9 @@ import java.io.IOException;
  * key of the current element. That way, the system can handle stream and state partitioning
  * consistently together.
  *
+ * 该状态只能由{@code KeyedStream}上应用的函数访问。
+ * 该键由系统自动提供，因此该功能始终会看到映射到当前元素的键的值。
+ * 这样，系统可以一致地一起处理流和状态分区
  * @param <T> Type of the value in the state.
  */
 @PublicEvolving

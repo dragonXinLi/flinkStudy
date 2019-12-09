@@ -22,6 +22,8 @@ import org.apache.flink.annotation.PublicEvolving;
 
 /**
  * Interface for working with time and timers.
+ *
+ * 仅在键控流上支持设置计时器
  */
 @PublicEvolving
 public interface TimerService {

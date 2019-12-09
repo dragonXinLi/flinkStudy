@@ -115,6 +115,8 @@ public interface ListCheckpointed<T extends Serializable> {
 	 * Gets the current state of the function. The state must reflect the result of all prior
 	 * invocations to this function.
 	 *
+	 * 获取函数的当前状态。 状态必须反映对该功能的所有先前调用的结果。
+	 *
 	 * <p>The returned list should contain one entry for redistributable unit of state. See
 	 * the {@link ListCheckpointed class docs} for an illustration how list-style state
 	 * redistribution works.
@@ -127,6 +129,8 @@ public interface ListCheckpointed<T extends Serializable> {
 	 *
 	 * @return The operator state in a list of redistributable, atomic sub-states.
 	 *         Should not return null, but empty list instead.
+	 *
+	 *         可再分配的原子子状态列表中的运算符状态。 不应该返回null，而是返回空列表。
 	 *
 	 * @throws Exception Thrown if the creation of the state object failed. This causes the
 	 *                   checkpoint to fail. The system may decide to fail the operation (and trigger

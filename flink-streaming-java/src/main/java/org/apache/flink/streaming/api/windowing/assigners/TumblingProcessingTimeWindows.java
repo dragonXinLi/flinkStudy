@@ -40,6 +40,8 @@ import java.util.Collections;
  * WindowedStream<Tuple2<String, Integer>, String, TimeWindows> windowed =
  *   keyed.window(TumblingProcessingTimeWindows.of(Time.of(1, MINUTES), Time.of(10, SECONDS));
  * } </pre>
+ *
+ * 按处理时间来分配的滚动时间分配器
  */
 public class TumblingProcessingTimeWindows extends WindowAssigner<Object, TimeWindow> {
 	private static final long serialVersionUID = 1L;
@@ -61,6 +63,7 @@ public class TumblingProcessingTimeWindows extends WindowAssigner<Object, TimeWi
 	public Collection<TimeWindow> assignWindows(Object element, long timestamp, WindowAssignerContext context) {
 		final long now = context.getCurrentProcessingTime();
 		long start = TimeWindow.getWindowStartWithOffset(now, offset, size);
+		//这里就决定了滚动窗口只能是一条数据只能属于一个窗口
 		return Collections.singletonList(new TimeWindow(start, start + size));
 	}
 

@@ -342,7 +342,7 @@ public abstract class AbstractFetcher<T, KPH> {
 
 	/**
 	 * Emits a record without attaching an existing timestamp to it.
-	 *
+	 * 发出一个记录，而不将现有的时间戳附加到它。
 	 * <p>Implementation Note: This method is kept brief to be JIT inlining friendly.
 	 * That makes the fast path efficient, the extended paths are called as separate methods.
 	 *

@@ -29,18 +29,24 @@ import java.io.IOException;
 /**
  * The default window into which all data is placed (via
  * {@link org.apache.flink.streaming.api.windowing.assigners.GlobalWindows}).
+ *
+ * 所有数据都放入其中的默认窗口
+ *
  */
 @PublicEvolving
 public class GlobalWindow extends Window {
 
+	//globalWindow窗口只全局创建一次
 	private static final GlobalWindow INSTANCE = new GlobalWindow();
 
 	private GlobalWindow() { }
 
+	//对外提供 get() 方法返回 GlobalWindow 实例，并且是个全局单例
 	public static GlobalWindow get() {
 		return INSTANCE;
 	}
 
+	//globalWindow窗口长度无限大
 	@Override
 	public long maxTimestamp() {
 		return Long.MAX_VALUE;

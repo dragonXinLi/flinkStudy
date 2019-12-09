@@ -29,6 +29,7 @@ import org.apache.flink.annotation.Internal;
 public class KafkaTopicPartitionStateSentinel {
 
 	/** Magic number that defines an unset offset. */
+	//表示 未设置偏移量的一个特定数值
 	public static final long OFFSET_NOT_SET = -915623761776L;
 
 	/**

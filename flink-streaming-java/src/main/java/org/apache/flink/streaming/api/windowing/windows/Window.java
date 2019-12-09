@@ -33,6 +33,8 @@ public abstract class Window {
 	/**
 	 * Gets the largest timestamp that still belongs to this window.
 	 *
+	 * 获取属于此窗口的最大时间戳
+	 *
 	 * @return The largest timestamp that still belongs to this window.
 	 */
 	public abstract long maxTimestamp();

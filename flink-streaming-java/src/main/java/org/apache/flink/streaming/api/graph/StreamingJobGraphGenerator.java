@@ -157,7 +157,7 @@ public class StreamingJobGraphGenerator {
 		setPhysicalEdges();
 
 		setSlotSharingAndCoLocation();
-
+		//jobGraph生成的时候，调用此方法进行checkpoint配置
 		configureCheckpointing();
 
 		JobGraphGenerator.addUserArtifactEntries(streamGraph.getEnvironment().getCachedFiles(), jobGraph);
@@ -590,9 +590,9 @@ public class StreamingJobGraphGenerator {
 	}
 
 	private void configureCheckpointing() {
-		CheckpointConfig cfg = streamGraph.getCheckpointConfig();
+		CheckpointConfig cfg = streamGraph.getCheckpointConfig();//取出checkpoint配置
 
-		long interval = cfg.getCheckpointInterval();
+		long interval = cfg.getCheckpointInterval();//checkpoint的时间间隔
 		if (interval > 0) {
 			ExecutionConfig executionConfig = streamGraph.getExecutionConfig();
 			// propagate the expected behaviour for checkpoint errors to task.
@@ -607,19 +607,26 @@ public class StreamingJobGraphGenerator {
 		// collect the vertices that receive "trigger checkpoint" messages.
 		// currently, these are all the sources
 		List<JobVertexID> triggerVertices = new ArrayList<>();
-
+		//收集需要确认检查点的顶点
 		// collect the vertices that need to acknowledge the checkpoint
 		// currently, these are all vertices
 		List<JobVertexID> ackVertices = new ArrayList<>(jobVertices.size());
 
 		// collect the vertices that receive "commit checkpoint" messages
 		// currently, these are all vertices
+		//jobVertices里面装的内容是
+		/*
+		vertex对象："1" -> "Source: Custom Source -> Timestamps/Watermarks -> Map -> Process (org.apache.flink.streaming.runtime.tasks.SourceStreamTask)"
+		vertex对象："6" -> "Window(TumblingEventTimeWindows(5000), EventTimeTrigger, ReduceFunction$2, PassThroughWindowFunction) -> Sink: Unnamed (org.apache.flink.streaming.runtime.tasks.OneInputStreamTask)"
+		 */
 		List<JobVertexID> commitVertices = new ArrayList<>(jobVertices.size());
 
 		for (JobVertex vertex : jobVertices.values()) {
+			//这里只有对source vertex,才加入triggerVertices,因为只需要在源头触发checkpoint
 			if (vertex.isInputVertex()) {
 				triggerVertices.add(vertex.getID());
 			}
+			//当前所有节点都会加入commitVertices和ackVertices
 			commitVertices.add(vertex.getID());
 			ackVertices.add(vertex.getID());
 		}
@@ -700,7 +707,7 @@ public class StreamingJobGraphGenerator {
 		}
 
 		//  --- done, put it all together ---
-
+		//生成JobCheckpointSettings
 		JobCheckpointingSettings settings = new JobCheckpointingSettings(
 			triggerVertices,
 			ackVertices,
@@ -714,7 +721,7 @@ public class StreamingJobGraphGenerator {
 				isExactlyOnce),
 			serializedStateBackend,
 			serializedHooks);
-
+		//调用setSnapshotSettings
 		jobGraph.setSnapshotSettings(settings);
 	}
 }

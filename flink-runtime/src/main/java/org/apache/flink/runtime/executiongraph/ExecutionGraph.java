@@ -492,11 +492,11 @@ public class ExecutionGraph implements AccessExecutionGraph {
 		ExecutionVertex[] tasksToCommitTo = collectExecutionVertices(verticesToCommitTo);
 
 		checkpointStatsTracker = checkNotNull(statsTracker, "CheckpointStatsTracker");
-
+		//初始化checkpointCoordinator
 		// create the coordinator that triggers and commits checkpoints and holds the state
 		checkpointCoordinator = new CheckpointCoordinator(
 			jobInformation.getJobId(),
-			interval,
+			interval,//代码配置的chk参数60000
 			checkpointTimeout,
 			minPauseBetweenCheckpoints,
 			maxConcurrentCheckpoints,
@@ -519,11 +519,17 @@ public class ExecutionGraph implements AccessExecutionGraph {
 
 		checkpointCoordinator.setCheckpointStatsTracker(checkpointStatsTracker);
 
+		//最大长值的间隔表示禁用定期检查点
 		// interval of max long value indicates disable periodic checkpoint,
+		//仅当间隔不是最大值时，才应创建CheckpointActivatorDeactivator
 		// the CheckpointActivatorDeactivator should be created only if the interval is not max value
 		if (interval != Long.MAX_VALUE) {
+			//由于以下原因，定期检查点调度程序被激活和停用：
 			// the periodic checkpoint scheduler is activated and deactivated as a result of
 			// job status changes (running -> on, all other states -> off)
+			//作业状态更改（运行->开启，所有其他状态->关闭）
+
+			//为checkpointCoordinator 创建一个checkpoint定时任务触发的开关CheckpointCoordinatorDeActivator
 			registerJobStatusListener(checkpointCoordinator.createActivatorDeactivator());
 		}
 	}

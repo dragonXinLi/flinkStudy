@@ -1133,6 +1133,7 @@ public class Task implements Runnable, TaskActions, CheckpointListener {
 	/**
 	 * Calls the invokable to trigger a checkpoint.
 	 *
+	 * task的triggerCheckpointBarrier也是一个核心方法，该方法在这一步骤主要是为source端打状态并发射初始barrier到下游
 	 * @param checkpointID The ID identifying the checkpoint.
 	 * @param checkpointTimestamp The timestamp associated with the checkpoint.
 	 * @param checkpointOptions Options for performing this checkpoint.
@@ -1148,6 +1149,7 @@ public class Task implements Runnable, TaskActions, CheckpointListener {
 		if (executionState == ExecutionState.RUNNING && invokable != null) {
 
 			// build a local closure
+			//taskName:Source: Custom Source -> Timestamps/Watermarks -> Map -> Process (1/2)
 			final String taskName = taskNameWithSubtask;
 			final SafetyNetCloseableRegistry safetyNetCloseableRegistry =
 				FileSystemSafetyNet.getSafetyNetCloseableRegistryForThread();
@@ -1160,6 +1162,8 @@ public class Task implements Runnable, TaskActions, CheckpointListener {
 					FileSystemSafetyNet.setSafetyNetCloseableRegistryForThread(safetyNetCloseableRegistry);
 
 					try {
+						//Task的triggerCheckpointBarrier会调用StreamTask.triggerCheckpoint方法
+						//该方法只会在source端的trigger请求中被触发到:Source: Custom Source -> Timestamps/Watermarks -> Map -> Process (2/2)
 						boolean success = invokable.triggerCheckpoint(checkpointMetaData, checkpointOptions);
 						if (!success) {
 							checkpointResponder.declineCheckpoint(

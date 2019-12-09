@@ -281,6 +281,7 @@ public class JobMaster extends FencedRpcEndpoint<JobMasterId> implements JobMast
 		this.lastInternalSavepoint = null;
 
 		this.jobManagerJobMetricGroup = jobMetricGroupFactory.create(jobGraph);
+
 		this.executionGraph = createAndRestoreExecutionGraph(jobManagerJobMetricGroup);
 		this.jobStatusListener = null;
 
@@ -662,6 +663,9 @@ public class JobMaster extends FencedRpcEndpoint<JobMasterId> implements JobMast
 		if (checkpointCoordinator != null) {
 			getRpcService().execute(() -> {
 				try {
+					//JobManager收到AcknowledgeCheckpoint
+					//如果收到是task端确认的AcknowledgeCheckpoint消息，将会调用CheckpointCoordinator的receiveAcknowledgeMessage方法
+					// 并在方法中等待所有task的ack消息的确认.
 					checkpointCoordinator.receiveAcknowledgeMessage(ackMessage);
 				} catch (Throwable t) {
 					log.warn("Error while processing checkpoint acknowledgement message", t);
@@ -1156,6 +1160,7 @@ public class JobMaster extends FencedRpcEndpoint<JobMasterId> implements JobMast
 		executionGraph.registerJobStatusListener(jobStatusListener);
 
 		try {
+			//真正的调度
 			executionGraph.scheduleForExecution();
 		}
 		catch (Throwable t) {
@@ -1164,9 +1169,10 @@ public class JobMaster extends FencedRpcEndpoint<JobMasterId> implements JobMast
 	}
 
 	private ExecutionGraph createAndRestoreExecutionGraph(JobManagerJobMetricGroup currentJobManagerJobMetricGroup) throws Exception {
-
+		//方法里主要是根据jobGraph构建ExecutionGraph
 		ExecutionGraph newExecutionGraph = createExecutionGraph(currentJobManagerJobMetricGroup);
 
+		//ExecutionGraph类会初始化CheckpointCoordinator
 		final CheckpointCoordinator checkpointCoordinator = newExecutionGraph.getCheckpointCoordinator();
 
 		if (checkpointCoordinator != null) {

@@ -90,9 +90,9 @@ public class TaskStateManagerImpl implements TaskStateManager {
 		@Nullable TaskStateSnapshot localState) {
 
 		long checkpointId = checkpointMetaData.getCheckpointId();
-
+		//存储到本地
 		localStateStore.storeLocalState(checkpointId, localState);
-
+		//把state snapshot发送到JobManager去，消息是AcknowledgeCheckpoint
 		checkpointResponder.acknowledgeCheckpoint(
 			jobId,
 			executionAttemptID,

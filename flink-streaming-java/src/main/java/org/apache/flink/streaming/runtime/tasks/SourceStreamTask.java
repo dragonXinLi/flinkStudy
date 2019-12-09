@@ -113,6 +113,7 @@ public class SourceStreamTask<OUT, SRC extends SourceFunction<OUT>, OP extends S
 	@Override
 	public boolean triggerCheckpoint(CheckpointMetaData checkpointMetaData, CheckpointOptions checkpointOptions) throws Exception {
 		if (!externallyInducedCheckpoints) {
+			//它会设置barrier对齐的一些参数,并调用performCheckpoint去实际做checkpoint工作
 			return super.triggerCheckpoint(checkpointMetaData, checkpointOptions);
 		}
 		else {

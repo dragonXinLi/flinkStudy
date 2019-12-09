@@ -28,6 +28,7 @@ import org.apache.flink.streaming.api.windowing.windows.Window;
 /**
  * A {@link Trigger} that fires once the count of elements in a pane reaches the given count.
  *
+ * 一旦窗格中的元素数量达到给定数量，就会触发{@link触发器}。
  * @param <W> The type of {@link Window Windows} on which this trigger can operate.
  */
 @PublicEvolving
@@ -36,6 +37,7 @@ public class CountTrigger<W extends Window> extends Trigger<Object, W> {
 
 	private final long maxCount;
 
+	//数量窗口触发器内部是用state状态来做累加，当到达的数量和>=设定的最大数量，就会触发窗口计算
 	private final ReducingStateDescriptor<Long> stateDesc =
 			new ReducingStateDescriptor<>("count", new Sum(), LongSerializer.INSTANCE);
 

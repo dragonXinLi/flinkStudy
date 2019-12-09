@@ -46,6 +46,8 @@ public interface Evictor<T, W extends Window> extends Serializable {
 	/**
 	 * Optionally evicts elements. Called before windowing function.
 	 *
+	 * 可选地逐出元素。 在开窗函数之前调用。
+	 *
 	 * @param elements The elements currently in the pane.
 	 * @param size The current number of elements in the pane.
 	 * @param window The {@link Window}
@@ -55,6 +57,8 @@ public interface Evictor<T, W extends Window> extends Serializable {
 
 	/**
 	 * Optionally evicts elements. Called after windowing function.
+	 *
+	 * 可选地逐出元素。 在开窗函数之后调用。
 	 *
 	 * @param elements The elements currently in the pane.
 	 * @param size The current number of elements in the pane.

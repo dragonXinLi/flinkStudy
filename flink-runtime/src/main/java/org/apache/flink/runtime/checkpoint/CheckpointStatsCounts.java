@@ -146,7 +146,7 @@ public class CheckpointStatsCounts implements Serializable {
 
 	/**
 	 * Increments the number of successfully completed checkpoints.
-	 *
+	 *增加成功完成的检查点的数量。
 	 * <p>It is expected that this follows a previous call to
 	 * {@link #incrementInProgressCheckpoints()}.
 	 */

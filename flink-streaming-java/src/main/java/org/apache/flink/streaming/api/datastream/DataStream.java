@@ -575,7 +575,7 @@ public class DataStream<T> {
 	 * {@link RichMapFunction} to gain access to other features provided by the
 	 * {@link org.apache.flink.api.common.functions.RichFunction} interface.
 	 *
-	 * @param mapper
+	 * @param mapper  传进来一个继承自MapFunction的类
 	 *            The MapFunction that is called for each element of the
 	 *            DataStream.
 	 * @param <R>

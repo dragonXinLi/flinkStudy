@@ -245,11 +245,11 @@ public class CheckpointStatsHistory implements Serializable {
 	/**
 	 * Searches for the in progress checkpoint with the given ID and replaces
 	 * it with the given completed or failed checkpoint.
-	 *
+	 *搜索具有给定ID的进行中检查点，并将其替换为给定的已完成或失败的检查点。
 	 * <p>This is bounded by the maximum number of concurrent in progress
 	 * checkpointsArray, which means that the runtime of this is constant.
 	 *
-	 * @param completedOrFailed The completed or failed checkpoint to replace the in progress checkpoint with.
+	 * @param completedOrFailed The completed or failed checkpoint to replace the in progress checkpoint with.完成或失败的检查点以替换进行中的检查点。
 	 * @return <code>true</code> if the checkpoint was replaced or <code>false</code> otherwise.
 	 */
 	boolean replacePendingCheckpointById(AbstractCheckpointStats completedOrFailed) {

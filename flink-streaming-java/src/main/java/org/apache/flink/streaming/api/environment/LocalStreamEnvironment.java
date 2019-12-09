@@ -89,6 +89,7 @@ public class LocalStreamEnvironment extends StreamExecutionEnvironment {
 		StreamGraph streamGraph = getStreamGraph();
 		streamGraph.setJobName(jobName);
 
+		//第一阶段主要是client端的JobGraph的生成并拿到所有checkpoint的配置信息，然后提交任务给JobManager
 		JobGraph jobGraph = streamGraph.getJobGraph();
 		jobGraph.setAllowQueuedScheduling(true);
 
@@ -119,7 +120,7 @@ public class LocalStreamEnvironment extends StreamExecutionEnvironment {
 		try {
 			miniCluster.start();
 			configuration.setInteger(RestOptions.PORT, miniCluster.getRestAddress().getPort());
-
+			//
 			return miniCluster.executeJobBlocking(jobGraph);
 		}
 		finally {

@@ -889,7 +889,7 @@ public class Execution implements AccessExecution, Archiveable<ArchivedExecution
 
 	/**
 	 * Notify the task of this execution about a completed checkpoint.
-	 *
+	 *	通知此执行任务有关完成的检查点
 	 * @param checkpointId of the completed checkpoint
 	 * @param timestamp of the completed checkpoint
 	 */
@@ -899,6 +899,8 @@ public class Execution implements AccessExecution, Archiveable<ArchivedExecution
 		if (slot != null) {
 			final TaskManagerGateway taskManagerGateway = slot.getTaskManagerGateway();
 
+			//Taskmanager收到notifyCheckpointComplete消息后触发task的notifyCheckpointComplete方法
+			// 并最终调用到task上的所有operator的notifyCheckpointComplete。这样一次完整的Checkpoint过程就结束了。
 			taskManagerGateway.notifyCheckpointComplete(attemptId, getVertex().getJobId(), checkpointId, timestamp);
 		} else {
 			LOG.debug("The execution has no slot assigned. This indicates that the execution is " +
@@ -908,6 +910,7 @@ public class Execution implements AccessExecution, Archiveable<ArchivedExecution
 
 	/**
 	 * Trigger a new checkpoint on the task of this execution.
+	 * 在此执行任务上触发一个新的检查点。
 	 *
 	 * @param checkpointId of th checkpoint to trigger
 	 * @param timestamp of the checkpoint to trigger

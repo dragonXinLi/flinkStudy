@@ -196,6 +196,7 @@ public class OperatorChain<OUT, OP extends StreamOperator<OUT>> implements Strea
 	}
 
 	public void broadcastCheckpointBarrier(long id, long timestamp, CheckpointOptions checkpointOptions) throws IOException {
+		//新建一个checkpoint屏障对象
 		CheckpointBarrier barrier = new CheckpointBarrier(id, timestamp, checkpointOptions);
 		for (RecordWriterOutput<?> streamOutput : streamOutputs) {
 			streamOutput.broadcastEvent(barrier);

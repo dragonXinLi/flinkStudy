@@ -55,6 +55,7 @@ public class KafkaPartitionDiscoverer extends AbstractPartitionDiscoverer {
 
 	@Override
 	protected void initializeConnections() {
+		//创建kafka消费者
 		this.kafkaConsumer = new KafkaConsumer<>(kafkaProperties);
 	}
 
@@ -68,6 +69,22 @@ public class KafkaPartitionDiscoverer extends AbstractPartitionDiscoverer {
 		}
 	}
 
+	/**
+	 * partitions列表里面存储的是 new KafkaTopicPartition对象，该对象包含各个分区所属的topic名称和分区号
+	 * 这里返回的所有的topics的所有分区的topic名称和分区号，并不是一个topic的
+	 *
+	 * 如：
+	 *
+	 * 0 = {KafkaTopicPartition@6131} "KafkaTopicPartition{topic='user-behavior-pos-storeOrder', partition=2}"
+	 * 1 = {KafkaTopicPartition@6132} "KafkaTopicPartition{topic='user-behavior-pos-storeOrder', partition=4}"
+	 * 2 = {KafkaTopicPartition@6133} "KafkaTopicPartition{topic='user-behavior-pos-storeOrder', partition=1}"
+	 * 3 = {KafkaTopicPartition@6134} "KafkaTopicPartition{topic='user-behavior-pos-storeOrder', partition=3}"
+	 * 4 = {KafkaTopicPartition@6135} "KafkaTopicPartition{topic='user-behavior-pos-storeOrder', partition=0}"
+	 *
+	 * @param topics 需要的topic列表
+	 * @return
+	 * @throws AbstractPartitionDiscoverer.WakeupException
+	 */
 	@Override
 	protected List<KafkaTopicPartition> getAllPartitionsForTopics(List<String> topics) throws AbstractPartitionDiscoverer.WakeupException {
 		List<KafkaTopicPartition> partitions = new LinkedList<>();

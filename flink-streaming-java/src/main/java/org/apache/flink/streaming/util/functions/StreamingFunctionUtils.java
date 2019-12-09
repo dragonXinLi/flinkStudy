@@ -95,7 +95,7 @@ public final class StreamingFunctionUtils {
 		Preconditions.checkNotNull(backend);
 
 		while (true) {
-
+			//最终会执行到调用算子的snapshotState方法
 			if (trySnapshotFunctionState(context, backend, userFunction)) {
 				break;
 			}
@@ -109,12 +109,22 @@ public final class StreamingFunctionUtils {
 		}
 	}
 
+	/**
+	 * 如果该userFunction没有实现CheckpointedFunction和ListCheckpointed，那么该算子的state不会被chk备份
+	 * 最终会执行到调用算子的snapshotState方法
+	 * @param context
+	 * @param backend
+	 * @param userFunction
+	 * @return
+	 * @throws Exception
+	 */
 	private static boolean trySnapshotFunctionState(
 			StateSnapshotContext context,
 			OperatorStateBackend backend,
 			Function userFunction) throws Exception {
 
 		if (userFunction instanceof CheckpointedFunction) {
+			//调用算子的snapshotState方法
 			((CheckpointedFunction) userFunction).snapshotState(context);
 
 			return true;
@@ -125,9 +135,10 @@ public final class StreamingFunctionUtils {
 			List<Serializable> partitionableState = ((ListCheckpointed<Serializable>) userFunction).
 					snapshotState(context.getCheckpointId(), context.getCheckpointTimestamp());
 
+			//上一次chk backend 里面保存的chk值
 			ListState<Serializable> listState = backend.
 					getSerializableListState(DefaultOperatorStateBackend.DEFAULT_OPERATOR_STATE_NAME);
-
+			//清除上一次保存的chk 值
 			listState.clear();
 
 			if (null != partitionableState) {

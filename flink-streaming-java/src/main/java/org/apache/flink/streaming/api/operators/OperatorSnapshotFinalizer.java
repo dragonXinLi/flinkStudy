@@ -43,6 +43,7 @@ public class OperatorSnapshotFinalizer {
 	public OperatorSnapshotFinalizer(
 		@Nonnull OperatorSnapshotFutures snapshotFutures) throws ExecutionException, InterruptedException {
 
+		//keyedState和OperateState,都有ManagedSate,RowState
 		SnapshotResult<KeyedStateHandle> keyedManaged =
 			FutureUtil.runIfNotDoneAndGet(snapshotFutures.getKeyedStateManagedFuture());
 

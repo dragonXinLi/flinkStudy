@@ -165,6 +165,7 @@ public abstract class FlinkKafkaConsumerBase<T> extends RichParallelSourceFuncti
 	private final LinkedMap pendingOffsetsToCommit = new LinkedMap();
 
 	/** The fetcher implements the connections to the Kafka brokers. */
+	//与Kafka brokers的连接fetch数据的实现
 	private transient volatile AbstractFetcher<T, ?> kafkaFetcher;
 
 	/** The partition discoverer, used to find new partitions. */
@@ -457,19 +458,45 @@ public abstract class FlinkKafkaConsumerBase<T> extends RichParallelSourceFuncti
 	@Override
 	public void open(Configuration configuration) throws Exception {
 		// determine the offset commit mode
+
+		/*
+
+		确定偏移提交模式:
+		1 判断offsetCommitMode。
+		根据kafka的auto commit ，setCommitOffsetsOnCheckpoints()的值（默认为true）以及flink运行时有没有开启checkpoint三个参数的组合，
+
+		offsetCommitMode共有三种模式：ON_CHECKPOINTS  checkpoint结束后提交offset；KAFKA_PERIODIC kafkaconsumer自带的定期提交功能；DISABLED 不提交
+		 */
 		this.offsetCommitMode = OffsetCommitModes.fromConfiguration(
 				getIsAutoCommitEnabled(),
 				enableCommitOnCheckpoints,
 				((StreamingRuntimeContext) getRuntimeContext()).isCheckpointingEnabled());
 
 		// create the partition discoverer
+		//创建分区发现者
 		this.partitionDiscoverer = createPartitionDiscoverer(
 				topicsDescriptor,
 				getRuntimeContext().getIndexOfThisSubtask(),
 				getRuntimeContext().getNumberOfParallelSubtasks());
+
+		//open方法里面真正的创建kafka消费者
 		this.partitionDiscoverer.open();
 
+		/*
+		2 分配kafka partition 。
+		如果initializeState阶段已经拿到了state之前存储的partition，直接继续读取对应的分区，
+		如果是第一次初始化，则直接计算当前task对应的分区列表
+		 */
+
+		//partition的分区结果记录在私有变量Map<KafkaTopicPartition, Long> subscribedPartitionsToStartOffsets 里，用于后续初始化consumer。
 		subscribedPartitionsToStartOffsets = new HashMap<>();
+		/**
+		 * 每个source Consumer subtask 获取到的kafka partition 分区不一样，如下：
+		 * 0 = {KafkaTopicPartition@6382} "KafkaTopicPartition{topic='user-behavior-pos-storeOrder', partition=1}"
+		 * 1 = {KafkaTopicPartition@6383} "KafkaTopicPartition{topic='user-behavior-pos-storeOrder', partition=3}"
+		 *
+		 * 这个allPartitions只有属于当前子任务的分区
+		 */
 		final List<KafkaTopicPartition> allPartitions = partitionDiscoverer.discoverPartitions();
 		if (restoredState != null) {
 			for (KafkaTopicPartition partition : allPartitions) {
@@ -614,6 +641,7 @@ public abstract class FlinkKafkaConsumerBase<T> extends RichParallelSourceFuncti
 		}
 
 		// initialize commit metrics and default offset callback method
+		//初始化提交指标和默认偏移量回调方法
 		this.successfulCommits = this.getRuntimeContext().getMetricGroup().counter(COMMITS_SUCCEEDED_METRICS_COUNTER);
 		this.failedCommits =  this.getRuntimeContext().getMetricGroup().counter(COMMITS_FAILED_METRICS_COUNTER);
 
@@ -631,17 +659,27 @@ public abstract class FlinkKafkaConsumerBase<T> extends RichParallelSourceFuncti
 		};
 
 		// mark the subtask as temporarily idle if there are no initial seed partitions;
+		// 如果没有给该subtask子任务分配分区，则将该子任务标记为临时空闲；
 		// once this subtask discovers some partitions and starts collecting records, the subtask's
 		// status will automatically be triggered back to be active.
+		//一旦此子任务发现了一些分区并开始收集记录，该子任务的状态将自动被触发回到活动状态。
 		if (subscribedPartitionsToStartOffsets.isEmpty()) {
 			sourceContext.markAsTemporarilyIdle();
 		}
 
 		// from this point forward:
+		//从这开始
 		//   - 'snapshotState' will draw offsets from the fetcher,
 		//     instead of being built from `subscribedPartitionsToStartOffsets`
+
+
+		//“snapshotState”快照将从fetcher中提取偏移量，而不是从“subscribedpartitionstostartoffset”生成`
+
+
 		//   - 'notifyCheckpointComplete' will start to do work (i.e. commit offsets to
 		//     Kafka through the fetcher, if configured to do so)
+
+		//“notifyCheckpointComplete”将开始工作（即，如果配置为这样，则通过fetcher向Kafka提交偏移）
 		this.kafkaFetcher = createFetcher(
 				sourceContext,
 				subscribedPartitionsToStartOffsets,
@@ -804,6 +842,7 @@ public abstract class FlinkKafkaConsumerBase<T> extends RichParallelSourceFuncti
 
 		OperatorStateStore stateStore = context.getOperatorStateStore();
 
+		//获取checkpoint里面的state对象
 		ListState<Tuple2<KafkaTopicPartition, Long>> oldRoundRobinListState =
 			stateStore.getSerializableListState(DefaultOperatorStateBackend.DEFAULT_OPERATOR_STATE_NAME);
 
@@ -811,11 +850,13 @@ public abstract class FlinkKafkaConsumerBase<T> extends RichParallelSourceFuncti
 				OFFSETS_STATE_NAME,
 				TypeInformation.of(new TypeHint<Tuple2<KafkaTopicPartition, Long>>() {})));
 
+		//如果这个task是从失败等过程中恢复的过程中，context.isRestored()会被判定为true
 		if (context.isRestored() && !restoredFromOldState) {
 			restoredState = new TreeMap<>(new KafkaTopicPartition.Comparator());
 
 			// migrate from 1.2 state, if there is any
 			for (Tuple2<KafkaTopicPartition, Long> kafkaOffset : oldRoundRobinListState.get()) {
+				//从flink checkpoint里获取原来分配到的kafka partition以及最后提交完成的offset
 				restoredFromOldState = true;
 				unionOffsetStates.add(kafkaOffset);
 			}
@@ -827,6 +868,7 @@ public abstract class FlinkKafkaConsumerBase<T> extends RichParallelSourceFuncti
 			}
 
 			// populate actual holder for restored state
+			//填充partition分区号和offset偏移量以恢复状态
 			for (Tuple2<KafkaTopicPartition, Long> kafkaOffset : unionOffsetStates.get()) {
 				restoredState.put(kafkaOffset.f0, kafkaOffset.f1);
 			}
@@ -961,6 +1003,7 @@ public abstract class FlinkKafkaConsumerBase<T> extends RichParallelSourceFuncti
 
 	/**
 	 * Creates the partition discoverer that is used to find new partitions for this subtask.
+	 * 创建用于发现此子任务新分区的分区发现器。
 	 *
 	 * @param topicsDescriptor Descriptor that describes whether we are discovering partitions for fixed topics or a topic pattern.
 	 * @param indexOfThisSubtask The index of this consumer subtask.

@@ -43,6 +43,7 @@ public class RpcCheckpointResponder implements CheckpointResponder {
 			CheckpointMetrics checkpointMetrics,
 			TaskStateSnapshot subtaskState) {
 
+		//把state snapshot发送到JobManager去，消息是AcknowledgeCheckpoint
 		checkpointCoordinatorGateway.acknowledgeCheckpoint(
 			jobID,
 			executionAttemptID,

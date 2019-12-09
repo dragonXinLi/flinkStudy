@@ -49,6 +49,7 @@ public class OneInputTransformation<IN, OUT> extends StreamTransformation<OUT> {
 	private TypeInformation<?> stateKeyType;
 
 	/**
+	 * 根据给定的输入和运算符创建一个新的OneInputTransformation
 	 * Creates a new {@code OneInputTransformation} from the given input and operator.
 	 *
 	 * @param input The input {@code StreamTransformation}

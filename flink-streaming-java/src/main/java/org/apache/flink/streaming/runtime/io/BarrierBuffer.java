@@ -160,23 +160,32 @@ public class BarrierBuffer implements CheckpointBarrierHandler {
 	public BufferOrEvent getNextNonBlocked() throws Exception {
 		while (true) {
 			// process buffered BufferOrEvents before grabbing new ones
+			//获得下一个待缓存的buffer或者barrier事件
 			Optional<BufferOrEvent> next;
 			if (currentBuffered == null) {
+				//如果当前的缓冲区为null，则从输入端获得
 				next = inputGate.getNextBufferOrEvent();
 			}
 			else {
+				//如果缓冲区不为空，则从缓冲区中获得数据
 				next = Optional.ofNullable(currentBuffered.getNext());
 				if (!next.isPresent()) {
+					//清空当前缓冲区，获取已经新的缓冲区并打开它
 					completeBufferedSequence();
+					//递归调用，处理下一条数据
 					return getNextNonBlocked();
 				}
 			}
 
+			//next 为null 同时流结束标识为false
 			if (!next.isPresent()) {
 				if (!endOfStream) {
 					// end of input stream. stream continues with the buffered data
+					//置流结束标识为true
 					endOfStream = true;
+					//解除阻塞，这种情况下我们会看到，缓冲区的数据会被加入队列，并等待处理
 					releaseBlocksAndResetBarriers();
+					//继续获取下一个待处理的记录
 					return getNextNonBlocked();
 				}
 				else {
@@ -186,15 +195,19 @@ public class BarrierBuffer implements CheckpointBarrierHandler {
 			}
 
 			BufferOrEvent bufferOrEvent = next.get();
+			//如果获取到得记录所在的channel已经处于阻塞状态，则该记录会被加入缓冲区
 			if (isBlocked(bufferOrEvent.getChannelIndex())) {
 				// if the channel is blocked we, we just store the BufferOrEvent
 				bufferBlocker.add(bufferOrEvent);
 				checkSizeLimit();
 			}
+			//如果该记录是一个正常的记录，而不是一个barrier(事件)，则直接返回
 			else if (bufferOrEvent.isBuffer()) {
 				return bufferOrEvent;
 			}
+			//如果是一个barrier
 			else if (bufferOrEvent.getEvent().getClass() == CheckpointBarrier.class) {
+				//并且当前流还未处于结束状态，则处理该barrier
 				if (!endOfStream) {
 					// process barriers only if there is a chance of the checkpoint completing
 					processBarrier((CheckpointBarrier) bufferOrEvent.getEvent(), bufferOrEvent.getChannelIndex());
@@ -204,9 +217,11 @@ public class BarrierBuffer implements CheckpointBarrierHandler {
 				processCancellationBarrier((CancelCheckpointMarker) bufferOrEvent.getEvent());
 			}
 			else {
+				//如果它是一个事件，表示当前已到达分区末尾
 				if (bufferOrEvent.getEvent().getClass() == EndOfPartitionEvent.class) {
 					processEndOfPartition();
 				}
+				//返回该事件
 				return bufferOrEvent;
 			}
 		}
@@ -223,10 +238,17 @@ public class BarrierBuffer implements CheckpointBarrierHandler {
 		}
 	}
 
+	/**
+	 * 方法调用processBarrier进行barrier的处理
+	 * @param receivedBarrier
+	 * @param channelIndex
+	 * @throws Exception
+	 */
 	private void processBarrier(CheckpointBarrier receivedBarrier, int channelIndex) throws Exception {
 		final long barrierId = receivedBarrier.getId();
 
 		// fast path for single channel cases
+		//单通道
 		if (totalNumberOfInputChannels == 1) {
 			if (barrierId > currentCheckpointId) {
 				// new checkpoint
@@ -237,16 +259,18 @@ public class BarrierBuffer implements CheckpointBarrierHandler {
 		}
 
 		// -- general code path for multiple input channels --
-
+		//多个输入通道
 		if (numBarriersReceived > 0) {
 			// this is only true if some alignment is already progress and was not canceled
-
+			//这仅在某些对齐已在进行且尚未取消的情况下才为真
 			if (barrierId == currentCheckpointId) {
 				// regular case
+				//常规情况
 				onBarrier(channelIndex);
 			}
 			else if (barrierId > currentCheckpointId) {
 				// we did not complete the current checkpoint, another started before
+				//我们没有完成当前的检查点，在另一个task接收到了一个新的屏障之后，跳过此次checkpoint备份
 				LOG.warn("{}: Received checkpoint barrier for checkpoint {} before completing current checkpoint {}. " +
 						"Skipping current checkpoint.",
 					inputGate.getOwningTaskName(),
@@ -254,12 +278,14 @@ public class BarrierBuffer implements CheckpointBarrierHandler {
 					currentCheckpointId);
 
 				// let the task know we are not completing this
+				//主动让task任务知道我们没有完成此次checkpoint
 				notifyAbort(currentCheckpointId, new CheckpointDeclineSubsumedException(barrierId));
 
 				// abort the current checkpoint
 				releaseBlocksAndResetBarriers();
 
 				// begin a the new checkpoint
+				//开始一个新的chk
 				beginNewAlignment(barrierId, channelIndex);
 			}
 			else {
@@ -279,6 +305,7 @@ public class BarrierBuffer implements CheckpointBarrierHandler {
 
 		// check if we have all barriers - since canceled checkpoints always have zero barriers
 		// this can only happen on a non canceled checkpoint
+		//检查我们是否具有所有屏障-由于取消的检查点始终具有零屏障，因此只能在未取消的检查点上发生
 		if (numBarriersReceived + numClosedChannels == totalNumberOfInputChannels) {
 			// actually trigger checkpoint
 			if (LOG.isDebugEnabled()) {
@@ -289,6 +316,8 @@ public class BarrierBuffer implements CheckpointBarrierHandler {
 			}
 
 			releaseBlocksAndResetBarriers();
+			//processBarrier中会区分单一的input channel和多input channel的情况，最终如果满足条件会触发notifyCheckpoint方法，
+			// 该方法会调用到StreamTask的triggerCheckpointOnBarrier方法，注意与3.1步骤的triggerCheckpointBarrier方法不要混淆。
 			notifyCheckpoint(receivedBarrier);
 		}
 	}
@@ -371,13 +400,16 @@ public class BarrierBuffer implements CheckpointBarrierHandler {
 	}
 
 	private void processEndOfPartition() throws Exception {
+		//已关闭的channel计数器加一
 		numClosedChannels++;
 
 		if (numBarriersReceived > 0) {
 			// let the task know we skip a checkpoint
+			//让我们知道这种情况下跳过了这次检查点备份
 			notifyAbort(currentCheckpointId, new InputEndOfStreamException());
 
 			// no chance to complete this checkpoint
+			//此时已经没有机会完成该检查点，则解除阻塞
 			releaseBlocksAndResetBarriers();
 		}
 	}
@@ -477,7 +509,7 @@ public class BarrierBuffer implements CheckpointBarrierHandler {
 	/**
 	 * Blocks the given channel index, from which a barrier has been received.
 	 *
-	 * @param channelIndex The channel index to block.
+	 * @param channelIndex The channel index to block.该条屏障的通道索引。
 	 */
 	private void onBarrier(int channelIndex) throws IOException {
 		if (!blockedChannels[channelIndex]) {
@@ -498,7 +530,9 @@ public class BarrierBuffer implements CheckpointBarrierHandler {
 
 	/**
 	 * Releases the blocks on all channels and resets the barrier count.
+	 * 释放所有通道上的块并重置屏障计数。
 	 * Makes sure the just written data is the next to be consumed.
+	 * 确保刚写入的数据是下一个要使用的数据
 	 */
 	private void releaseBlocksAndResetBarriers() throws IOException {
 		LOG.debug("{}: End of stream alignment, feeding buffered data back.",

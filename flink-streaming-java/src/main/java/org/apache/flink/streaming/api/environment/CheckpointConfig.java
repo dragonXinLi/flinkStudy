@@ -298,6 +298,7 @@ public class CheckpointConfig implements java.io.Serializable {
 
 	/**
 	 * Cleanup behaviour for externalized checkpoints when the job is cancelled.
+	 * 取消作业时外部检查点的清理行为
 	 */
 	@PublicEvolving
 	public enum ExternalizedCheckpointCleanup {
@@ -317,7 +318,7 @@ public class CheckpointConfig implements java.io.Serializable {
 
 		/**
 		 * Retain externalized checkpoints on job cancellation.
-		 *
+		 *保留有关取消工作的外部检查点。
 		 * <p>All checkpoint state is kept when you cancel the owning job. You
 		 * have to manually delete both the checkpoint meta data and actual
 		 * program state after cancelling the job.

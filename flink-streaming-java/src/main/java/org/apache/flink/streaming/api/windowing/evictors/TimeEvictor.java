@@ -94,6 +94,8 @@ public class TimeEvictor<W extends Window> implements Evictor<Object, W> {
 	/**
 	 * @param elements The elements currently in the pane.
 	 * @return The maximum value of timestamp among the elements.
+	 *
+	 * 元素之间时间戳的最大值。
      */
 	private long getMaxTimestamp(Iterable<TimestampedValue<Object>> elements) {
 		long currentTime = Long.MIN_VALUE;

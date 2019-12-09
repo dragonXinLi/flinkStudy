@@ -60,6 +60,8 @@ public abstract class Trigger<T, W extends Window> implements Serializable {
 	 * Called for every element that gets added to a pane. The result of this will determine
 	 * whether the pane is evaluated to emit results.
 	 *
+	 * 当有数据进入到 Window 运算符就会触发该方法
+	 *
 	 * @param element The element that arrived.
 	 * @param timestamp The timestamp of the element that arrived.
 	 * @param window The window to which the element is being added.
@@ -70,6 +72,8 @@ public abstract class Trigger<T, W extends Window> implements Serializable {
 	/**
 	 * Called when a processing-time timer that was set using the trigger context fires.
 	 *
+	 * 当使用触发器上下文设置的处理时间计时器触发时调用
+	 *
 	 * @param time The timestamp at which the timer fired.
 	 * @param window The window for which the timer fired.
 	 * @param ctx A context object that can be used to register timer callbacks.
@@ -78,6 +82,8 @@ public abstract class Trigger<T, W extends Window> implements Serializable {
 
 	/**
 	 * Called when an event-time timer that was set using the trigger context fires.
+	 *
+	 * 当使用触发器上下文设置的事件时间计时器触发时调用该方法
 	 *
 	 * @param time The timestamp at which the timer fired.
 	 * @param window The window for which the timer fired.

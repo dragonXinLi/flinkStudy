@@ -178,6 +178,7 @@ public class RecordWriter<T extends IOReadableWritable> {
 				tryFinishCurrentBufferBuilder(targetChannel);
 
 				// Retain the buffer so that it can be recycled by each channel of targetPartition
+				//保留缓冲区，以便targetPartition的每个通道都可以回收它
 				targetPartition.addBufferConsumer(eventBufferConsumer.copy(), targetChannel);
 			}
 

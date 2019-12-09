@@ -25,6 +25,9 @@ import org.apache.flink.runtime.jobgraph.JobStatus;
 import static org.apache.flink.util.Preconditions.checkNotNull;
 
 /**
+ *
+ * 该参与者监听JobStatus中的更改，并激活或停用定期
+ * 检查点调度程序。
  * This actor listens to changes in the JobStatus and activates or deactivates the periodic
  * checkpoint scheduler.
  */
@@ -36,6 +39,10 @@ public class CheckpointCoordinatorDeActivator implements JobStatusListener {
 		this.coordinator = checkNotNull(coordinator);
 	}
 
+	/**
+	 * 提交的flink job运行起来，job状态变动后，CheckpointCoordinatorDeActivator持续监听Job的状态。
+	 * 当监听到Job处于RUNNING的时候，将timer定时任务启动
+	 */
 	@Override
 	public void jobStatusChanges(JobID jobId, JobStatus newJobStatus, long timestamp, Throwable error) {
 		if (newJobStatus == JobStatus.RUNNING) {

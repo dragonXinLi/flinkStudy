@@ -719,7 +719,7 @@ public class TaskExecutor extends RpcEndpoint implements TaskExecutorGateway {
 	// ----------------------------------------------------------------------
 	// Checkpointing RPCs
 	// ----------------------------------------------------------------------
-
+	//TaskManager收到上一阶段的triggerCheckpoint消息后，进行处理。主要是触发检查点屏障Barrier。
 	@Override
 	public CompletableFuture<Acknowledge> triggerCheckpoint(
 			ExecutionAttemptID executionAttemptID,

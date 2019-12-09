@@ -111,10 +111,10 @@ public class PendingCheckpointStats extends AbstractCheckpointStats {
 	// ------------------------------------------------------------------------
 
 	/**
-	 * Reports statistics for a single subtask.
+	 * Reports statistics for a single subtask.报告单个子任务的统计信息。
 	 *
-	 * @param jobVertexId ID of the task/operator the subtask belongs to.
-	 * @param subtask The statistics for the subtask.
+	 * @param jobVertexId ID of the task/operator the subtask belongs to.子任务所属的任务/操作员的ID。
+	 * @param subtask The statistics for the subtask.子任务的统计信息。
 	 * @return <code>true</code> if successfully reported or <code>false</code> otherwise.
 	 */
 	boolean reportSubtaskStats(JobVertexID jobVertexId, SubtaskStateStats subtask) {
@@ -138,7 +138,7 @@ public class PendingCheckpointStats extends AbstractCheckpointStats {
 	}
 
 	/**
-	 * Reports a successfully completed pending checkpoint.
+	 * Reports a successfully completed pending checkpoint. 报告成功完成的挂起检查点。
 	 *
 	 * @param externalPointer Optional external storage path if checkpoint was externalized.
 	 * @return Callback for the {@link CompletedCheckpoint} instance to notify about disposal.
@@ -155,7 +155,7 @@ public class PendingCheckpointStats extends AbstractCheckpointStats {
 			currentAlignmentBuffered,
 			latestAcknowledgedSubtask,
 				externalPointer);
-
+		//圈圈变钩钩，钩钩变历史chk
 		trackerCallback.reportCompletedCheckpoint(completed);
 
 		return completed.getDiscardCallback();

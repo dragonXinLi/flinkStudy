@@ -86,8 +86,11 @@ public abstract class AbstractPartitionDiscoverer {
 
 	/**
 	 * Opens the partition discoverer, initializing all required Kafka connections.
+	 * 打开分区发现器，初始化所有必需的Kafka连接
 	 *
 	 * <p>NOTE: thread-safety is not guaranteed.
+	 *
+	 * 不能保证线程安全。
 	 */
 	public void open() throws Exception {
 		closed = false;
@@ -120,6 +123,8 @@ public abstract class AbstractPartitionDiscoverer {
 	 * This method lets the partition discoverer update what partitions it has discovered so far.
 	 *
 	 * @return List of discovered new partitions that this subtask should subscribe to.
+	 *
+	 * 此子任务实例应订阅的发现的新分区的列表。
 	 */
 	public List<KafkaTopicPartition> discoverPartitions() throws WakeupException, ClosedException {
 		if (!closed && !wakeup) {
@@ -127,12 +132,14 @@ public abstract class AbstractPartitionDiscoverer {
 				List<KafkaTopicPartition> newDiscoveredPartitions;
 
 				// (1) get all possible partitions, based on whether we are subscribed to fixed topics or a topic pattern
+				//根据我们订阅的是固定主题还是主题模式，获取所有可能的分区
 				if (topicsDescriptor.isFixedTopics()) {
 					newDiscoveredPartitions = getAllPartitionsForTopics(topicsDescriptor.getFixedTopics());
 				} else {
 					List<String> matchedTopics = getAllTopics();
 
 					// retain topics that match the pattern
+					//保留与模式匹配的主题
 					Iterator<String> iter = matchedTopics.iterator();
 					while (iter.hasNext()) {
 						if (!topicsDescriptor.getTopicPattern().matcher(iter.next()).matches()) {
@@ -142,6 +149,7 @@ public abstract class AbstractPartitionDiscoverer {
 
 					if (matchedTopics.size() != 0) {
 						// get partitions only for matched topics
+						//仅获取匹配主题的分区
 						newDiscoveredPartitions = getAllPartitionsForTopics(matchedTopics);
 					} else {
 						newDiscoveredPartitions = null;
@@ -149,6 +157,7 @@ public abstract class AbstractPartitionDiscoverer {
 				}
 
 				// (2) eliminate partition that are old partitions or should not be subscribed by this subtask
+				//消除旧分区或 不应由该子任务订阅的分区(和当前子任务的index作比较而得出)
 				if (newDiscoveredPartitions == null || newDiscoveredPartitions.isEmpty()) {
 					throw new RuntimeException("Unable to retrieve any partitions with KafkaTopicsDescriptor: " + topicsDescriptor);
 				} else {
@@ -157,6 +166,7 @@ public abstract class AbstractPartitionDiscoverer {
 					while (iter.hasNext()) {
 						nextPartition = iter.next();
 						if (!setAndCheckDiscoveredPartition(nextPartition)) {
+							//删除不属于当前子任务的分区
 							iter.remove();
 						}
 					}
@@ -187,7 +197,7 @@ public abstract class AbstractPartitionDiscoverer {
 	 *
 	 * <p>If the partition is indeed newly discovered, this method also returns
 	 * whether the new partition should be subscribed by this subtask.
-	 *
+	 * 如果确实确实发现了该分区，则此方法还返回此子任务是否应订阅新分区
 	 * @param partition the partition to set and check
 	 *
 	 * @return {@code true}, if the partition wasn't seen before and should
@@ -196,7 +206,7 @@ public abstract class AbstractPartitionDiscoverer {
 	public boolean setAndCheckDiscoveredPartition(KafkaTopicPartition partition) {
 		if (isUndiscoveredPartition(partition)) {
 			discoveredPartitions.add(partition);
-
+			//将该topic的分区号应该分配给consumer消费者的索引index和当前子任务索引index比较
 			return KafkaTopicPartitionAssigner.assign(partition, numParallelSubtasks) == indexOfThisSubtask;
 		}
 

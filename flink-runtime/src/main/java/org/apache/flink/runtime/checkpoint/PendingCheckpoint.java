@@ -237,7 +237,7 @@ public class PendingCheckpoint {
 	// ------------------------------------------------------------------------
 
 	/**
-	 * Returns the completion future.
+	 * Returns the completion future.返回一个checkpoint完成的回调。
 	 *
 	 * @return A future to the completed checkpoint
 	 */
@@ -284,6 +284,7 @@ public class PendingCheckpoint {
 				}
 
 				// mark this pending checkpoint as disposed, but do NOT drop the state
+				//将此挂起的检查点标记为已处置，但不要删除状态
 				dispose(false);
 
 				return completed;
@@ -299,9 +300,9 @@ public class PendingCheckpoint {
 	/**
 	 * Acknowledges the task with the given execution attempt id and the given subtask state.
 	 *
-	 * @param executionAttemptId of the acknowledged task
-	 * @param operatorSubtaskStates of the acknowledged task
-	 * @param metrics Checkpoint metrics for the stats
+	 * @param executionAttemptId of the acknowledged task  确认任务的executionAttemptId
+	 * @param operatorSubtaskStates of the acknowledged task  确认任务的operatorSubtaskStates
+	 * @param metrics Checkpoint metrics for the stats 指标统计信息的检查点指标
 	 * @return TaskAcknowledgeResult of the operation
 	 */
 	public TaskAcknowledgeResult acknowledgeTask(
@@ -337,8 +338,8 @@ public class PendingCheckpoint {
 
 					OperatorSubtaskState operatorSubtaskState =
 						operatorSubtaskStates.getSubtaskStateByOperatorID(operatorID);
-
 					// if no real operatorSubtaskState was reported, we insert an empty state
+					//如果没有operatorSubtaskState信息，我们将插入一个空状态
 					if (operatorSubtaskState == null) {
 						operatorSubtaskState = new OperatorSubtaskState();
 					}
@@ -366,7 +367,7 @@ public class PendingCheckpoint {
 			if (statsCallback != null) {
 				// Do this in millis because the web frontend works with them
 				long alignmentDurationMillis = metrics.getAlignmentDurationNanos() / 1_000_000;
-
+				//之所以要这样做，是因为Web前端可以与他们合作
 				SubtaskStateStats subtaskStateStats = new SubtaskStateStats(
 					subtaskIndex,
 					ackTimestamp,
