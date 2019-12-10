@@ -26,6 +26,8 @@ import org.apache.flink.util.Preconditions;
 /**
  * Queryable state stream instance.
  *
+ * 可查询的状态流
+ *
  * @param <K>  State key type
  * @param <V>  State value type
  */

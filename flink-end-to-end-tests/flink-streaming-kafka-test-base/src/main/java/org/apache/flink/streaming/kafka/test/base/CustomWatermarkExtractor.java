@@ -28,6 +28,8 @@ import javax.annotation.Nullable;
  * A custom {@link AssignerWithPeriodicWatermarks}, that simply assumes that the input stream
  * records are strictly ascending.
  *
+ * 自定义{@link AssignerWithPeriodicWatermarks}，它简单地假设输入流记录严格地递增。
+ *
  * <p>Flink also ships some built-in convenience assigners, such as the
  * {@link BoundedOutOfOrdernessTimestampExtractor} and {@link AscendingTimestampExtractor}
  */

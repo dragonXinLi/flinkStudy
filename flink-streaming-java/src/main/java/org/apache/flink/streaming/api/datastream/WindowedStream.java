@@ -102,6 +102,7 @@ import static org.apache.flink.util.Preconditions.checkNotNull;
 public class WindowedStream<T, K, W extends Window> {
 
 	/** The keyed data stream that is windowed by this stream. */
+	//该流窗口化的键控数据流。
 	private final KeyedStream<T, K> input;
 
 	/** The window assigner. */

@@ -76,6 +76,8 @@ public class SingleOutputStreamOperator<T> extends DataStream<T> {
 	 * Sets the name of the current data stream. This name is
 	 * used by the visualization and logging during runtime.
 	 *
+	 * 设置当前数据流的名称。 这个名字是在运行时用于可视化和记录。
+	 *
 	 * @return The named operator.
 	 */
 	public SingleOutputStreamOperator<T> name(String name){
@@ -215,6 +217,8 @@ public class SingleOutputStreamOperator<T> extends DataStream<T> {
 	 * Sets the parallelism and maximum parallelism of this operator to one.
 	 * And mark this operator cannot set a non-1 degree of parallelism.
 	 *
+	 * 将此运算符的并行度和最大并行度设置为1。
+	 *
 	 * @return The operator with only one parallelism.
 	 */
 	@PublicEvolving
@@ -251,6 +255,8 @@ public class SingleOutputStreamOperator<T> extends DataStream<T> {
 	 * Sets the {@link ChainingStrategy} for the given operator affecting the
 	 * way operators will possibly be co-located on the same thread for
 	 * increased performance.
+	 *
+	 * 为给定的运算符设置{@link ChainingStrategy}，影响运算符可能共处同一线程以提高性能的方式。
 	 *
 	 * @param strategy
 	 *            The selected {@link ChainingStrategy}

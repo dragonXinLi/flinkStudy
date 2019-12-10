@@ -35,6 +35,7 @@ public class IngestionTimeExtractor<T> implements AssignerWithPeriodicWatermarks
 	@Override
 	public long extractTimestamp(T element, long previousElementTimestamp) {
 		// make sure timestamps are monotonously increasing, even when the system clock re-syncs
+		//确保时间戳单调增加，即使系统时钟重新同步也是如此
 		final long now = Math.max(System.currentTimeMillis(), maxTimestamp);
 		maxTimestamp = now;
 		return now;

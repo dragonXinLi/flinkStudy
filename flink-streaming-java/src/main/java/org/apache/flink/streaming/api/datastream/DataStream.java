@@ -107,6 +107,8 @@ import java.util.List;
  * <li>{@link DataStream#filter}
  * </ul>
  *
+ * DataStream 表示相同类型的元素组成的数据流，一个数据流可以通过 map/filter 等算子转换成另一个数据流
+ *
  * @param <T> The type of the elements in this stream.
  */
 @Public
@@ -168,6 +170,8 @@ public class DataStream<T> {
 
 	/**
 	 * Gets the type of the stream.
+	 *
+	 * 获取流的类型。如流里面的dto相同
 	 *
 	 * @return The type of the datastream.
 	 */
@@ -347,6 +351,8 @@ public class DataStream<T> {
 	 * This method takes the key position to partition on, and a partitioner that accepts the key type.
 	 *
 	 * <p>Note: This method works only on single field keys.
+	 *
+	 * 使用自定义分区程序在指定的键字段上对元组DataStream进行分区。
 	 *
 	 * @param partitioner The partitioner to assign partitions to keys.
 	 * @param field The field index on which the DataStream is to partitioned.
@@ -853,6 +859,8 @@ public class DataStream<T> {
 	 * Assigns timestamps to the elements in the data stream and periodically creates
 	 * watermarks to signal event time progress.
 	 *
+	 * 为数据流中的元素分配时间戳，并定期创建水印以表示事件时间进度。
+	 *
 	 * <p>This method creates watermarks periodically (for example every second), based
 	 * on the watermarks indicated by the given watermark generator. Even when no new elements
 	 * in the stream arrive, the given watermark generator will be periodically checked for
@@ -899,6 +907,8 @@ public class DataStream<T> {
 	/**
 	 * Assigns timestamps to the elements in the data stream and creates watermarks to
 	 * signal event time progress based on the elements themselves.
+	 *
+	 * 为数据流中的元素分配时间戳，并基于元素本身创建水印以表示事件时间进度。
 	 *
 	 * <p>This method creates watermarks based purely on stream elements. For each element
 	 * that is handled via {@link AssignerWithPunctuatedWatermarks#extractTimestamp(Object, long)},
