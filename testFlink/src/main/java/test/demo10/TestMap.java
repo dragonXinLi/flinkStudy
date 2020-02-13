@@ -25,11 +25,11 @@ public class TestMap {
             @Override
             public Long map(Long value) throws Exception {
                 System.out.println("源数据：--------------------"+value);
-                return value+1;
+                return null;
             }
 		});
 
-        plusOne.print();
+//        plusOne.print();
 
         env.execute();
     }

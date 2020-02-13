@@ -21,8 +21,8 @@ public class KafkaProducerTest {
 		KafkaProducer<String, String> producer = new KafkaProducer<String, String>(props);
 		// 产生并发送消息
 
-		while (true) {
-			producer.send(new ProducerRecord<>("cj_test_2019_12_6_17_19", "dddd"), new Callback() {
+//		while (true) {
+			producer.send(new ProducerRecord<>("user-behavior-gateway", "ceshi"), new Callback() {
 				@Override
 				public void onCompletion(RecordMetadata metadata, Exception exception) {
 					if (exception != null) {
@@ -30,10 +30,10 @@ public class KafkaProducerTest {
 					}
 				}
 			});
-			Thread.sleep(1000);
-		}
+//			Thread.sleep(1000);
+//		}
 
 		// 关闭producer
-//		producer.close();
+		producer.close();
 	}
 }

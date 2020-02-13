@@ -50,6 +50,7 @@ public interface ReduceFunction<T> extends Function, Serializable {
 
 	/**
 	 * The core method of ReduceFunction, combining two values into one value of the same type.
+	 * ReduceFunction的核心方法，将两个值组合为一个相同类型的值
 	 * The reduce function is consecutively applied to all values of a group until only a single value remains.
 	 *
 	 * @param value1 The first value to combine.
